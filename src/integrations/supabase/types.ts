@@ -14,7 +14,186 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      approvals: {
+        Row: {
+          approval_type: string
+          approver_email: string
+          id: string
+          requested_at: string
+          responded_at: string | null
+          response_notes: string | null
+          status: string
+          workflow_id: string
+        }
+        Insert: {
+          approval_type: string
+          approver_email: string
+          id?: string
+          requested_at?: string
+          responded_at?: string | null
+          response_notes?: string | null
+          status?: string
+          workflow_id: string
+        }
+        Update: {
+          approval_type?: string
+          approver_email?: string
+          id?: string
+          requested_at?: string
+          responded_at?: string | null
+          response_notes?: string | null
+          status?: string
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approvals_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_receipts: {
+        Row: {
+          chain_hash: string | null
+          executor_id: string | null
+          id: string
+          input_hash: string
+          new_state: Database["public"]["Enums"]["workflow_state"]
+          output_hash: string
+          policy_decision: Database["public"]["Enums"]["policy_decision"]
+          policy_rule: string | null
+          previous_state: Database["public"]["Enums"]["workflow_state"] | null
+          timestamp: string
+          tool_name: string
+          workflow_id: string
+        }
+        Insert: {
+          chain_hash?: string | null
+          executor_id?: string | null
+          id?: string
+          input_hash: string
+          new_state: Database["public"]["Enums"]["workflow_state"]
+          output_hash: string
+          policy_decision: Database["public"]["Enums"]["policy_decision"]
+          policy_rule?: string | null
+          previous_state?: Database["public"]["Enums"]["workflow_state"] | null
+          timestamp?: string
+          tool_name: string
+          workflow_id: string
+        }
+        Update: {
+          chain_hash?: string | null
+          executor_id?: string | null
+          id?: string
+          input_hash?: string
+          new_state?: Database["public"]["Enums"]["workflow_state"]
+          output_hash?: string
+          policy_decision?: Database["public"]["Enums"]["policy_decision"]
+          policy_rule?: string | null
+          previous_state?: Database["public"]["Enums"]["workflow_state"] | null
+          timestamp?: string
+          tool_name?: string
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_receipts_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      policy_logs: {
+        Row: {
+          decision: Database["public"]["Enums"]["policy_decision"]
+          evaluated_at: string
+          id: string
+          policy_bundle: string | null
+          reason: string | null
+          requested_action: string
+          tool_name: string
+          workflow_id: string
+        }
+        Insert: {
+          decision: Database["public"]["Enums"]["policy_decision"]
+          evaluated_at?: string
+          id?: string
+          policy_bundle?: string | null
+          reason?: string | null
+          requested_action: string
+          tool_name: string
+          workflow_id: string
+        }
+        Update: {
+          decision?: Database["public"]["Enums"]["policy_decision"]
+          evaluated_at?: string
+          id?: string
+          policy_bundle?: string | null
+          reason?: string | null
+          requested_action?: string
+          tool_name?: string
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "policy_logs_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflows: {
+        Row: {
+          context: Json | null
+          created_at: string
+          current_state: Database["public"]["Enums"]["workflow_state"]
+          employee_email: string
+          employee_name: string
+          employment_type: Database["public"]["Enums"]["employment_type"]
+          id: string
+          location: string
+          role: string
+          start_date: string
+          team: string
+          updated_at: string
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          current_state?: Database["public"]["Enums"]["workflow_state"]
+          employee_email: string
+          employee_name: string
+          employment_type?: Database["public"]["Enums"]["employment_type"]
+          id?: string
+          location: string
+          role: string
+          start_date: string
+          team: string
+          updated_at?: string
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          current_state?: Database["public"]["Enums"]["workflow_state"]
+          employee_email?: string
+          employee_name?: string
+          employment_type?: Database["public"]["Enums"]["employment_type"]
+          id?: string
+          location?: string
+          role?: string
+          start_date?: string
+          team?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +202,22 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      employment_type: "fte" | "contractor" | "intern"
+      policy_decision: "allow" | "deny" | "needs_approval"
+      workflow_state:
+        | "INTENT_PARSED"
+        | "HR_VALIDATED"
+        | "POLICY_RESOLVED"
+        | "APPROVALS_PENDING"
+        | "APPROVALS_COMPLETED"
+        | "ERROR_APPROVAL_DENIED"
+        | "ITSM_CREATED"
+        | "IDENTITY_PROVISIONED"
+        | "ERROR_IDENTITY_PROVISION"
+        | "COMMS_SCHEDULED"
+        | "VERIFIED"
+        | "COMPLETED"
+        | "ERROR"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +344,24 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      employment_type: ["fte", "contractor", "intern"],
+      policy_decision: ["allow", "deny", "needs_approval"],
+      workflow_state: [
+        "INTENT_PARSED",
+        "HR_VALIDATED",
+        "POLICY_RESOLVED",
+        "APPROVALS_PENDING",
+        "APPROVALS_COMPLETED",
+        "ERROR_APPROVAL_DENIED",
+        "ITSM_CREATED",
+        "IDENTITY_PROVISIONED",
+        "ERROR_IDENTITY_PROVISION",
+        "COMMS_SCHEDULED",
+        "VERIFIED",
+        "COMPLETED",
+        "ERROR",
+      ],
+    },
   },
 } as const
